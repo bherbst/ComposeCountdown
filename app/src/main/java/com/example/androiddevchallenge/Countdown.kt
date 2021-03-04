@@ -50,7 +50,7 @@ fun Countdown(
                 modifier = Modifier
                     .padding(nextRingPadding)
                     .fillMaxSize(),
-                progress = remaining.minutesComponent().toFloat() / maxMinutes,
+                progress = progressFor(remaining.minutesComponent(), maxMinutes),
                 color = MaterialTheme.colors.primary,
                 strokeWidth = strokeWidth
             )
@@ -62,7 +62,7 @@ fun Countdown(
             modifier = Modifier
                 .padding(nextRingPadding)
                 .fillMaxSize(),
-            progress = remaining.secondsComponent().toFloat() / maxSeconds,
+            progress = progressFor(remaining.secondsComponent(), maxSeconds),
             color = MaterialTheme.colors.secondary,
             strokeWidth = strokeWidth
         )
@@ -103,10 +103,24 @@ private fun CountdownText(remaining: Duration) {
     }
 }
 
-val activeFontSize = 20.sp
-val inactiveFontSize = 14.sp
+private val activeFontSize = 20.sp
+private val inactiveFontSize = 14.sp
 
-val inactiveFontAlpha = .6f
+private const val inactiveFontAlpha = .6f
+
+/**
+ * Calculate the progress float for a particular unit. This will wrap back to 1f if there are 0 units
+ * remaining.
+ *
+ * @param remaining the amount of the given unit remaining
+ * @param max the maximum amount of units for this ring
+ */
+private fun progressFor(
+    remaining: Int,
+    max: Int
+): Float {
+    return if (remaining > 0 ) remaining.toFloat() / max else 1f
+}
 
 @Preview
 @Composable

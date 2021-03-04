@@ -20,7 +20,7 @@ class Timer(val duration: Duration) {
   suspend fun start() {
     secondsChannel = ticker(
       delayMillis = 1000, // tick every second
-      initialDelayMillis = 0
+      initialDelayMillis = 1000 // Wait a second for the first emission- otherwise we tick down immediately
     )
 
     isRunning = true
