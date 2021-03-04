@@ -38,7 +38,7 @@ fun Countdown(
             CircularProgressIndicator(
                 modifier = Modifier.fillMaxSize(),
                 progress = remaining.hoursComponent().toFloat() / maxHours,
-                color = Color.Red,
+                color = MaterialTheme.colors.primaryVariant,
                 strokeWidth = strokeWidth
             )
             nextRingPadding += strokeWidth + ringPadding
@@ -51,7 +51,7 @@ fun Countdown(
                     .padding(nextRingPadding)
                     .fillMaxSize(),
                 progress = remaining.minutesComponent().toFloat() / maxMinutes,
-                color = Color.Green,
+                color = MaterialTheme.colors.primary,
                 strokeWidth = strokeWidth
             )
             nextRingPadding += strokeWidth + ringPadding
@@ -63,43 +63,50 @@ fun Countdown(
                 .padding(nextRingPadding)
                 .fillMaxSize(),
             progress = remaining.secondsComponent().toFloat() / maxSeconds,
-            color = Color.Blue,
+            color = MaterialTheme.colors.secondary,
             strokeWidth = strokeWidth
         )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (remaining.inHours > 0) {
-                Text(
-                    text = "${remaining.hoursComponent()} hours",
-                    fontSize = activeFontSize,
-                    color = activeFontColor,
-                )
-            }
-            
-            if (remaining.inMinutes > 0) {
-                Text(
-                    text = "${remaining.minutesComponent()} minutes",
-                    fontSize = if (remaining.inHours <= 0) activeFontSize else inactiveFontSize,
-                    color = if (remaining.inHours <= 0) activeFontColor else inactiveFontColor,
-                )
-            }
+        CountdownText(remaining)
+    }
+}
 
+@OptIn(ExperimentalTime::class)
+@Composable
+private fun CountdownText(remaining: Duration) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (remaining.inHours >= 1) {
             Text(
-                text = "${remaining.secondsComponent()} seconds",
-                fontSize = if (remaining.inMinutes <= 0) activeFontSize else inactiveFontSize,
-                color = if (remaining.inMinutes <= 0) activeFontColor else inactiveFontColor,
+                text = "${remaining.hoursComponent()} hours",
+                fontSize = activeFontSize,
+                color = MaterialTheme.colors.primaryVariant,
             )
         }
+
+        if (remaining.inMinutes >= 1) {
+            val minutesDominant = remaining.inHours < 1
+            Text(
+                text = "${remaining.minutesComponent()} minutes",
+                fontSize = if (minutesDominant) activeFontSize else inactiveFontSize,
+                color = MaterialTheme.colors.primary.copy(alpha = if (minutesDominant) 1f else inactiveFontAlpha),
+            )
+        }
+
+        val secondsDominant = remaining.inMinutes < 1
+        Text(
+            text = "${remaining.secondsComponent()} seconds",
+            fontSize = if (secondsDominant) activeFontSize else inactiveFontSize,
+            color = MaterialTheme.colors.secondary.copy(alpha = if (secondsDominant) 1f else inactiveFontAlpha),
+        )
     }
 }
 
 val activeFontSize = 20.sp
 val inactiveFontSize = 14.sp
 
-val activeFontColor = Color(0xFFFFFFFF)
-val inactiveFontColor = Color(0x88FFFFFF)
+val inactiveFontAlpha = .6f
 
 @Preview
 @Composable

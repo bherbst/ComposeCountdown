@@ -6,6 +6,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.FloatingActionButton
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Pause
@@ -38,33 +40,37 @@ fun CountdownScreen(
     var timer  by remember { mutableStateOf(Timer(defaultDuration)) }
     val scope = rememberCoroutineScope()
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween
-    ) {
-        Countdown(
-            duration = timer.duration,
-            remaining = timer.remaining,
-            modifier = Modifier.padding(16.dp)
-        )
+    Surface {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Spacer(modifier = Modifier)
+            Countdown(
+                duration = timer.duration,
+                remaining = timer.remaining,
+                modifier = Modifier.padding(16.dp)
+            )
+            Spacer(modifier = Modifier)
 
-        TimerControls(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            onPlayPause = {
-                if (timer.isRunning) {
-                    timer.pause()
-                } else {
-                    scope.launch { timer.start() }
-                }
-            },
-            isRunning = timer.isRunning,
-            onEdit = {
-                // TODO real implemenation
-                timer = Timer(defaultDuration)
-            },
-        )
+            TimerControls(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                onPlayPause = {
+                    if (timer.isRunning) {
+                        timer.pause()
+                    } else {
+                        scope.launch { timer.start() }
+                    }
+                },
+                isRunning = timer.isRunning,
+                onEdit = {
+                    // TODO real implemenation
+                    timer = Timer(defaultDuration)
+                },
+            )
+        }
     }
 }
 
@@ -79,20 +85,14 @@ private fun TimerControls(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        FloatingActionButton(
-            onClick = onPlayPause,
-            backgroundColor = Color.Blue
-        ) {
+        FloatingActionButton(onClick = onPlayPause) {
             Icon(
                 imageVector = if (isRunning) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                 contentDescription = if (isRunning) "Pause" else "Play"
             )
         }
 
-        FloatingActionButton(
-            onClick = onEdit,
-            backgroundColor = Color.Blue
-        ) {
+        FloatingActionButton(onClick = onEdit) {
             Icon(
                 imageVector = Icons.Filled.Edit,
                 contentDescription = "Pause"
