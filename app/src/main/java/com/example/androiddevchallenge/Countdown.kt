@@ -33,7 +33,7 @@ fun Countdown(
         contentAlignment = Alignment.Center
     ) {
         var nextRingPadding = 0.dp
-        if (duration.inHours > 0) {
+        if (duration.inHours >= 1) {
             // Hours
             CircularProgressIndicator(
                 modifier = Modifier.fillMaxSize(),
@@ -44,7 +44,7 @@ fun Countdown(
             nextRingPadding += strokeWidth + ringPadding
         }
 
-        if (duration.inMinutes > 0) {
+        if (duration.inMinutes >= 1) {
             // Minutes
             CircularProgressIndicator(
                 modifier = Modifier
