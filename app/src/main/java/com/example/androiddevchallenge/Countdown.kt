@@ -1,10 +1,23 @@
 package com.example.androiddevchallenge
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,81 +26,85 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
-import kotlin.time.*
+import kotlin.time.Duration
+import kotlin.time.ExperimentalTime
+import kotlin.time.hours
+import kotlin.time.minutes
+import kotlin.time.seconds
 
-@OptIn(ExperimentalTime::class)
+@OptIn(ExperimentalTime::class, ExperimentalAnimationApi::class)
 @Composable
 fun Countdown(
     duration: Duration,
     remaining: Duration,
     modifier: Modifier = Modifier
 ) {
-    val maxHours = remember { duration.hoursComponent() }
-    val maxMinutes = remember { minOf(60, duration.inMinutes.roundToInt()) }
+    val maxMinutes = remember { duration.inMinutes.roundToInt() }
     val maxSeconds = remember { minOf(60, duration.inSeconds.roundToInt()) }
 
-    val strokeWidth = 16.dp
-    val ringPadding = 4.dp
     Box(
         modifier = modifier.aspectRatio(1f),
         contentAlignment = Alignment.Center
     ) {
-        var nextRingPadding = 0.dp
-        if (remaining.inHours >= 1) {
-            // Hours
-            CircularProgressIndicator(
-                modifier = Modifier.fillMaxSize(),
-                progress = remaining.hoursComponent().toFloat() / maxHours,
-                color = MaterialTheme.colors.primaryVariant,
-                strokeWidth = strokeWidth
-            )
-            nextRingPadding += strokeWidth + ringPadding
-        }
-
-        if (remaining.inMinutes >= 1) {
-            // Minutes
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .padding(nextRingPadding)
-                    .fillMaxSize(),
-                progress = progressFor(remaining.minutesComponent(), maxMinutes),
-                color = MaterialTheme.colors.primary,
-                strokeWidth = strokeWidth
-            )
-            nextRingPadding += strokeWidth + ringPadding
-        }
+        CountdownRing(
+            modifier = Modifier.fillMaxSize()
+                .padding(ringPadding + ringWidth),
+            remaining = (remaining.inSeconds % (maxMinutes * 60)).roundToInt(),
+            max = maxMinutes * 60,
+            resetAtZero = remaining.minutesComponent() > 1,
+            color = MaterialTheme.colors.primary
+        )
 
         // Seconds
-        if (remaining.inSeconds >= 1) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .padding(nextRingPadding)
-                    .fillMaxSize(),
-                progress = progressFor(remaining.secondsComponent(), maxSeconds),
-                color = MaterialTheme.colors.secondary,
-                strokeWidth = strokeWidth
-            )
-        }
+        CountdownRing(
+            modifier = Modifier.fillMaxSize()
+                .padding((ringPadding + ringWidth) * 2),
+            remaining = remaining.secondsComponent(),
+            max = maxSeconds,
+            resetAtZero = remaining.secondsComponent() > 60,
+            tickDurationMillis = 1000 * (60 / maxSeconds),
+            color = MaterialTheme.colors.secondary
+        )
 
         CountdownText(remaining)
     }
 }
 
-@OptIn(ExperimentalTime::class)
+@Composable
+private fun CountdownRing(
+    modifier: Modifier = Modifier,
+    remaining: Int,
+    max: Int,
+    resetAtZero: Boolean,
+    tickDurationMillis: Int = 1000,
+    color: Color,
+) {
+    val progress by animateFloatAsState(
+        targetValue = progressFor(remaining, max, resetAtZero),
+        animationSpec = tween(
+            durationMillis = tickDurationMillis,
+            easing = LinearEasing
+        ),
+    )
+
+    CircularProgressIndicator(
+        modifier = modifier,
+        progress = progress,
+        color = color,
+        strokeWidth = ringWidth
+    )
+}
+
+@OptIn(ExperimentalTime::class, ExperimentalAnimationApi::class)
 @Composable
 private fun CountdownText(remaining: Duration) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (remaining.inHours >= 1) {
-            Text(
-                text = "${remaining.hoursComponent()} hours",
-                fontSize = activeFontSize,
-                color = MaterialTheme.colors.primaryVariant,
-            )
-        }
-
-        if (remaining.inMinutes >= 1) {
+        AnimatedVisibility(
+            visible = remaining.inMinutes >= 1,
+            exit = fadeOut() + slideOutVertically()
+        ) {
             val minutesDominant = remaining.inHours < 1
             Text(
                 text = "${remaining.minutesComponent()} minutes",
@@ -96,8 +113,10 @@ private fun CountdownText(remaining: Duration) {
             )
         }
 
-
-        if (remaining.inSeconds >= 1) {
+        AnimatedVisibility(
+            visible = remaining.inSeconds >= 1,
+            exit = fadeOut() + slideOutVertically()
+        ) {
             val secondsDominant = remaining.inMinutes < 1
             Text(
                 text = "${remaining.secondsComponent()} seconds",
@@ -106,7 +125,7 @@ private fun CountdownText(remaining: Duration) {
             )
         }
 
-        if (remaining.inSeconds < 1) {
+        AnimatedVisibility(remaining.inSeconds < 1) {
             Text(
                 text = "Time is up!",
                 fontSize = activeFontSize,
@@ -119,7 +138,11 @@ private fun CountdownText(remaining: Duration) {
 private val activeFontSize = 20.sp
 private val inactiveFontSize = 14.sp
 
+private val ringWidth = 16.dp
+private val ringPadding = 4.dp
+
 private const val inactiveFontAlpha = .6f
+
 
 /**
  * Calculate the progress float for a particular unit. This will wrap back to 1f if there are 0 units
@@ -130,9 +153,14 @@ private const val inactiveFontAlpha = .6f
  */
 private fun progressFor(
     remaining: Int,
-    max: Int
+    max: Int,
+    resetAtZero: Boolean
 ): Float {
-    return if (remaining > 0 ) remaining.toFloat() / max else 1f
+    return if (remaining > 0 ) {
+        remaining.toFloat() / max
+    } else {
+        if (resetAtZero) 1f else 0f
+    }
 }
 
 @Preview

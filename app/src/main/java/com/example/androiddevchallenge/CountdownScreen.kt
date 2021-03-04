@@ -35,7 +35,7 @@ import kotlin.time.minutes
 @OptIn(ExperimentalTime::class)
 @Composable
 fun CountdownScreen(
-    defaultDuration: Duration = 5.minutes
+    defaultDuration: Duration = 2.minutes
 ) {
     var timer  by remember { mutableStateOf(Timer(defaultDuration)) }
     val scope = rememberCoroutineScope()
