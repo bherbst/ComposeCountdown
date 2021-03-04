@@ -33,7 +33,7 @@ fun Countdown(
         contentAlignment = Alignment.Center
     ) {
         var nextRingPadding = 0.dp
-        if (duration.inHours >= 1) {
+        if (remaining.inHours >= 1) {
             // Hours
             CircularProgressIndicator(
                 modifier = Modifier.fillMaxSize(),
@@ -44,7 +44,7 @@ fun Countdown(
             nextRingPadding += strokeWidth + ringPadding
         }
 
-        if (duration.inMinutes >= 1) {
+        if (remaining.inMinutes >= 1) {
             // Minutes
             CircularProgressIndicator(
                 modifier = Modifier
@@ -58,14 +58,16 @@ fun Countdown(
         }
 
         // Seconds
-        CircularProgressIndicator(
-            modifier = Modifier
-                .padding(nextRingPadding)
-                .fillMaxSize(),
-            progress = progressFor(remaining.secondsComponent(), maxSeconds),
-            color = MaterialTheme.colors.secondary,
-            strokeWidth = strokeWidth
-        )
+        if (remaining.inSeconds >= 1) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .padding(nextRingPadding)
+                    .fillMaxSize(),
+                progress = progressFor(remaining.secondsComponent(), maxSeconds),
+                color = MaterialTheme.colors.secondary,
+                strokeWidth = strokeWidth
+            )
+        }
 
         CountdownText(remaining)
     }
@@ -94,12 +96,23 @@ private fun CountdownText(remaining: Duration) {
             )
         }
 
-        val secondsDominant = remaining.inMinutes < 1
-        Text(
-            text = "${remaining.secondsComponent()} seconds",
-            fontSize = if (secondsDominant) activeFontSize else inactiveFontSize,
-            color = MaterialTheme.colors.secondary.copy(alpha = if (secondsDominant) 1f else inactiveFontAlpha),
-        )
+
+        if (remaining.inSeconds >= 1) {
+            val secondsDominant = remaining.inMinutes < 1
+            Text(
+                text = "${remaining.secondsComponent()} seconds",
+                fontSize = if (secondsDominant) activeFontSize else inactiveFontSize,
+                color = MaterialTheme.colors.secondary.copy(alpha = if (secondsDominant) 1f else inactiveFontAlpha),
+            )
+        }
+
+        if (remaining.inSeconds < 1) {
+            Text(
+                text = "Time is up!",
+                fontSize = activeFontSize,
+                color = MaterialTheme.colors.secondary,
+            )
+        }
     }
 }
 
