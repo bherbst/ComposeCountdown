@@ -1,3 +1,18 @@
+/*
+ * Copyright 2021 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.example.androiddevchallenge
 
 import androidx.compose.animation.AnimatedVisibility
@@ -6,7 +21,6 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -143,7 +157,6 @@ private val ringPadding = 4.dp
 
 private const val inactiveFontAlpha = .6f
 
-
 /**
  * Calculate the progress float for a particular unit. This will wrap back to 1f if there are 0 units
  * remaining.
@@ -156,7 +169,7 @@ private fun progressFor(
     max: Int,
     resetAtZero: Boolean
 ): Float {
-    return if (remaining > 0 ) {
+    return if (remaining > 0) {
         remaining.toFloat() / max
     } else {
         if (resetAtZero) 1f else 0f
